@@ -1,9 +1,6 @@
 // Grab the time display element
 var eTimeDisplay = $("#currentDay");
 
-// Grab each row from the table, place into array
-var eHours = $("#scheduleTable").children(); // ! Might not need
-
 // Grab the text area elements
 var aeTextAreaRows = [ $("#t9AMTextArea"),
                      $("#t10AMTextArea"),
@@ -57,7 +54,7 @@ function saveTextAreaContentToLocalStorage(index) {
 function colorCodeHours(cHour) {
 
     // Iterate through the rows
-    for (var i = 0; i < eHours.length; i++) {
+    for (var i = 0; i < 9; i++) { // Iterates 9 times
 
         var nRowHour = i + 9; // The "Hour" value of the row operated on
                               // Formatted to 24 hour time
@@ -93,7 +90,7 @@ function colorCodeHours(cHour) {
 function refreshTime() {
     
     // Get the current time and date
-    var sDate = moment().format("dddd, MMMM Do YYYY HH:mm:ss");
+    var sDate = moment().format("dddd, MMMM Do YYYY");
 
     // Store the current hour, strictly formatted into 24 hour time
     nCurrentHour = Number(moment().format("H") % 24);
