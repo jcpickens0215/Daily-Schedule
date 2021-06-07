@@ -1,66 +1,124 @@
 // Grab the time display element
-var timeDisplay = $("#currentDay");
+var eTimeDisplay = $("#currentDay");
 
 // Grab each row from the table, place into array
-var hours = $("#scheduleTable").children();
-
-// ! Test Button
-var TEST_BUTTON = $("#change");
-var tHour
-
-// Grab the save button elements
-var save9am  = $("#save9");
-var save10am = $("#save10");
-var save11am = $("#save11");
-var save12pm = $("#save12");
-var save1pm  = $("#save1");
-var save2pm  = $("#save2");
-var save3pm  = $("#save3");
-var save4pm  = $("#save4");
-var save5pm  = $("#save5");
+var eHours = $("#scheduleTable").children(); // ! Might not need
 
 // Grab the text area elements
-var text9am  = $("#t9AMTextArea");
-var text10am = $("#t10AMTextArea");
-var text11am = $("#t11AMTextArea");
-var text12pm = $("#t12PMTextArea");
-var text1pm  = $("#t1PMTextArea");
-var text2pm  = $("#t2PMTextArea");
-var text3pm  = $("#t3PMTextArea");
-var text4pm  = $("#t4PMTextArea");
-var text5pm  = $("#t5PMTextArea");
+var aeTextAreaRows = [ $("#t9AMTextArea"),
+                     $("#t10AMTextArea"),
+                     $("#t11AMTextArea"),
+                     $("#t12PMTextArea"),
+                     $("#t1PMTextArea"),
+                     $("#t2PMTextArea"),
+                     $("#t3PMTextArea"),
+                     $("#t4PMTextArea"),
+                     $("#t5PMTextArea") ];
 
-var currentHour;
+var nCurrentHour;  // the current hour, set by refreshTime
 
-function colorCodeHours(cHour) {
-    for (var i = 0; i < hours.length; i++) {
-        var rowHour = i + 9; // The "Hour" value of the row operated on
+// Container array to store text area data
+var aTextAreaContent = ["", "", "", "", "", "", "", "", ""];
 
-        var textAreaToColorCode = hours[i].children[1].children[0]; // The textarea of the current row
+// Executed on page start
+// Loads text area data from local storage and inserts it into the rows
+function initLoadFromLocalStorage() {
 
-        // RESET
-        textAreaToColorCode.classList.remove("past");
-        textAreaToColorCode.classList.remove("present");
-        textAreaToColorCode.classList.remove("future");
+    // Hold formatted data for error checking (so I don't repeat myself)
+    var aDataRetrievedFromLocalData = JSON.parse(localStorage.getItem("saved_data"));
 
-        // Update
-        if (rowHour < cHour) { // If this row has a lower "Hour" value
-            textAreaToColorCode.classList.add("past");
-        } else if (rowHour === cHour) { // If this row has the same "Hour" value
-            textAreaToColorCode.classList.add("present");
-        } else { // If this row has a higher "Hour" value
-            textAreaToColorCode.classList.add("future");
+    // Check to see if an item existed in local storage!
+    if (aDataRetrievedFromLocalData !== null) { // If we have something
+
+        // Store the data into the container array
+        aTextAreaContent = aDataRetrievedFromLocalData;
+
+        // Set the row's text area data
+        for (var i = 0; i < aeTextAreaRows.length; i++) {
+
+            aeTextAreaRows[i].text(aTextAreaContent[i]);
         }
     }
 }
 
-function refreshTime() {
-    var date = moment().format("dddd, MMMM Do YYYY HH:mm:ss");
-    currentHour = Number(moment().format("H") % 24);
-    console.log(currentHour);
+// Save to local storage
+function saveTextAreaContentToLocalStorage(index) {
+    
+    // ** These ARE jQuery objects!
+    // Get text content
+    aTextAreaContent[index] = aeTextAreaRows[index].val();
+    
+    // Save to local storage
+    var sStringifiedTextData = JSON.stringify(aTextAreaContent);
+    localStorage.setItem("saved_data", sStringifiedTextData);
+}
 
-    colorCodeHours(currentHour);
-    timeDisplay.html(date);
+// Colors the rows based on the current hour
+function colorCodeHours(cHour) {
+
+    // Iterate through the rows
+    for (var i = 0; i < eHours.length; i++) {
+
+        var nRowHour = i + 9; // The "Hour" value of the row operated on
+                              // Formatted to 24 hour time
+
+        // Grab current row being operated on
+        // ** This is a jQuery object and thus needs jQuery methods!
+        var eTextAreaToColorCode = aeTextAreaRows[i];
+
+        // RESET
+        // ** We're using jQuery methods here, because textAreToColorCode points to a jQuery object!
+        eTextAreaToColorCode.removeClass("past");
+        eTextAreaToColorCode.removeClass("present");
+        eTextAreaToColorCode.removeClass("future");
+
+        // Update
+        if (nRowHour < cHour) { // If this row has a lower "Hour" value
+
+            eTextAreaToColorCode.addClass("past");
+
+        } else if (nRowHour === cHour) { // If this row has the same "Hour" value
+
+            eTextAreaToColorCode.addClass("present");
+
+        } else { // If this row has a higher "Hour" value
+
+            eTextAreaToColorCode.addClass("future");
+
+        }
+    }
+}
+
+// Grabs the current time using Moment
+function refreshTime() {
+    
+    // Get the current time and date
+    var sDate = moment().format("dddd, MMMM Do YYYY HH:mm:ss");
+
+    // Store the current hour, strictly formatted into 24 hour time
+    nCurrentHour = Number(moment().format("H") % 24);
+
+    // Color the rows, and display the date
+    colorCodeHours(nCurrentHour);
+    eTimeDisplay.html(sDate);
 } 
 
+// Refresh the screen and currentHour every minute
 var refreshEveryMinute = setInterval(refreshTime(), 60000);
+
+// Load text area data from storage
+initLoadFromLocalStorage();
+
+// Handle event of user clicking on save button
+$("#scheduleTable").on("click", function (event) {
+
+    // Get the element clicked
+    var eClickedElement = event.target; // ** eClickedElement is NOT a jQuery object!!
+
+    // Make sure we're actually clicking a save button
+    if (eClickedElement.tagName === "BUTTON") {
+
+        var index = eClickedElement.getAttribute("data-index"); // Get the index of the button
+        saveTextAreaContentToLocalStorage(index); // Save the textArea's content to local storage
+    }
+});
