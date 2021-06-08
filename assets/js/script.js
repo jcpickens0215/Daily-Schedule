@@ -71,19 +71,40 @@ function colorCodeHours(cHour) {
 
         // Update
         if (nRowHour < cHour) { // If this row has a lower "Hour" value
-
             eTextAreaToColorCode.addClass("past");
-
         } else if (nRowHour === cHour) { // If this row has the same "Hour" value
-
             eTextAreaToColorCode.addClass("present");
-
         } else { // If this row has a higher "Hour" value
-
             eTextAreaToColorCode.addClass("future");
-
         }
     }
+}
+
+// Fade out the feedback element ("Saved!")
+// This fadeout effect lasts for 0.5 seconds
+function fadeOutElement(element, vOffset) {
+
+    element.css("display", "inline"); // Show the element
+    element.css("top", vOffset + "px"); // Set the vertical offset
+
+    var nOpacity = 1;  // Initial opacity
+
+    // Start the timer
+    var nTimer = setInterval(function () {
+
+        if (nOpacity <= 0.1) { // If The element's opacity is near 0
+
+            clearInterval(nTimer); // Exit the timer
+            element.css("display", "none"); // Hide the element
+        }
+
+        // Set the element's opacity
+        element.css("opacity", nOpacity);
+        element.css("filter", "alpha(opacity=" + nOpacity * 100 + ")");
+        
+        // Decrement the opacity
+        nOpacity -= nOpacity * 0.1;
+    }, 50);
 }
 
 // Grabs the current time using Moment
@@ -116,6 +137,20 @@ $("#scheduleTable").on("click", function (event) {
     if (eClickedElement.tagName === "BUTTON") {
 
         var index = eClickedElement.getAttribute("data-index"); // Get the index of the button
-        saveTextAreaContentToLocalStorage(index); // Save the textArea's content to local storage
+        var eSaveElement = $(".saveFeedback"); // Get the save feedback element
+
+        // Set the vertical offset for the feedback element. This will be used to vertically
+        // Align the element onto the page, based on which row was saved
+        var nVerticalOffset = -764 + (87 * index);
+
+        // Only allow saving if the "Saved!" feedback isn't visible
+        if (eSaveElement.css("display") === "none") {
+
+            // Save the textArea's content to local storage
+            saveTextAreaContentToLocalStorage(index);
+            
+            // Show the feedback element and slowly fade it out
+            fadeOutElement(eSaveElement, nVerticalOffset); 
+        }
     }
 });

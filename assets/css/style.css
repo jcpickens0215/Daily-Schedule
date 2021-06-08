@@ -81,5 +81,20 @@ td {
 
 .saveBtn:hover {
   font-size: 20px;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.05s ease-in-out;
+}
+
+.saveBtn:active {
+  color: black;
+}
+
+.saveFeedback {
+  display: none;
+  position: relative;
+  left: 75%;
+  top: -764px;
+  font-style: italic;
+  border: 1px solid gray;
+  background-color: lightgrey;
+  color: black;
 }
